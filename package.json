@@ -1,5 +1,8 @@
 {
   "dependencies": {
+    "eosjs": "^21.0.3",
+    "eosjs-ecc": "^4.0.7",
+    "node-fetch": "^2.6.1",
     "web3": "^1.3.0"
   }
 }

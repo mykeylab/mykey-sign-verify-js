@@ -1,17 +1,18 @@
 
+const { JsonRpc } = require('eosjs');
+const fetch = require('node-fetch');
 
-let Web3 = require('web3');
-let web3 = new Web3(new Web3.providers.HttpProvider("https://eth.mykey.tech"));
+const ecc = require('eosjs-ecc')
 
 // MYKEY账户数据存储合约地址
-let AccountStorageAddr = '0xADc92d1fD878580579716d944eF3460E241604b7'
-// MYKEY账户数据存储合约的abi, https://etherscan.io/address/0xADc92d1fD878580579716d944eF3460E241604b7#code
-let AccountStorageABI = require('./AccountStorage.abi.json').abi
-// MYKEY账户数据存储合约实例
-let AccountStorageIns = new web3.eth.Contract(AccountStorageABI, AccountStorageAddr);
+let MYKEYMgrContract = 'mykeymanager'
+const rpcEndpoint = 'https://eos.mykey.tech';
 
-// MYKEY主网测试账户， 0x3bB9E1783D5F60927eD6c3d0c32BfAD055A1b72f， 第3把操作密钥 0x37ac6c8229788643d62eF447eD988Ee7F00f8875
-let UserAccountAddress = '0x3bB9E1783D5F60927eD6c3d0c32BfAD055A1b72f'
+const rpc = new JsonRpc(rpcEndpoint, { fetch });
+
+
+// MYKEY主网测试账户， mykeydoctest, 第3把操作密钥 EOS6XmD7NK12LnmtXHtdnReTYbgRV1JPeo1M1BQvrHgnz6J1nNCFZ
+let UserAccountAddress = 'mykeydoctest'
 // 应用对接登录与签名时用到的是第3个操作密钥
 let SigningKeyIndex = 3
 
@@ -19,11 +20,15 @@ let SigningKeyIndex = 3
 // 链上查询签名公钥及状态
 async function getSigningKeyAndStatus() {
     // 1. 获取用户账户的第3个操作密钥
-    signingKey = await AccountStorageIns.methods.getKeyData(UserAccountAddress, SigningKeyIndex).call();
+    result = await rpc.get_table_rows({ json: true, code: MYKEYMgrContract, scope: UserAccountAddress, table: 'keydata', limit: 10 })
+
+    signingKeyObj = result.rows[SigningKeyIndex]
+    signingKey = signingKeyObj.key.pubkey
+
     console.log(UserAccountAddress, "账户签名KEY:", signingKey)
 
     // 2. 获取用户账户的第3个操作密钥的状态， 正常是0， 冻结是1
-    signingKeyStatus = await AccountStorageIns.methods.getKeyStatus(UserAccountAddress, SigningKeyIndex).call();
+    signingKeyStatus = signingKeyObj.key.status
     console.log(UserAccountAddress, "账户签名KEY状态:", signingKeyStatus)
 
     return {
@@ -45,24 +50,19 @@ async function getUnsignedData() {
     let ref = "mykey"
     let mykeyUID = "E87E3CC788C44BB8544003AF6CEB62E8"
 
-    let str = timestamp + account + uuID + ref + mykeyUID
+    let unsignedData = timestamp + account + uuID + ref + mykeyUID
 
-    let unsignedData = '0x' + Buffer.from(str).toString('hex')
     return unsignedData
 }
 
 // 验证签名
 async function verifySignature(unsignedData, signature, signingKey) {
 
-    let unsignedDataHash = web3.utils.soliditySha3(unsignedData);
-    console.log("unsignedDataHash ", unsignedDataHash)
+    let recoveredKey = ecc.recover(signature, unsignedData)
+    console.log("recoveredKey: ", recoveredKey)
 
-    //let prefixedHash = web3.eth.accounts.hashMessage(unsignedDataHash)
-    let recoveredKey = await web3.eth.accounts.recover(unsignedDataHash, signature)
-    
     console.log("recoveredKey: ", recoveredKey)
     console.log("验证签名:", recoveredKey === signingKey)
-
 }
 
 async function main() {
@@ -78,17 +78,13 @@ async function main() {
     console.log("==============================获取待签名数据==============================")
     // unsignedData 和 signature 数据来源于MYKEY主网测试账户， 参考SDK的"如何验签"章节。
     let unsignedData = await getUnsignedData()
-    let signature = "0x53d86f27d725d3660f242cf0efc1f62aed8c805a39bf9783e2e7c1f65a81d94f775dbcb2e7268672dccbb68518bf5b9ba5f0ad5b2bf20ff4f8c9043f7c43d6651c"
-
+    let signature = "SIG_K1_KcMxF6rNee2jsM9fge5CZWiENU4j6YLsHgKHD7n9TWvvhLSBtHE8rHV641sVdrw3JRcvCjBtGPRBHSBxzMubzw8DYVnk2e"
 
     console.log("unsignedData", unsignedData)
 
 
-
     console.log("==============================验证签名==============================")
-    await verifySignature(unsignedData, signature)
-
-
+    await verifySignature(unsignedData, signature, signingKeyObj.signingKey)
 }
 
 
