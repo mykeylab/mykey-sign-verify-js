@@ -1,5 +1,3 @@
-
-
 let Web3 = require('web3');
 let web3 = new Web3(new Web3.providers.HttpProvider("https://eth.mykey.tech"));
 
@@ -39,8 +37,8 @@ async function getUnsignedData() {
     // unsignedData = '...'
 
     // 2. SDK接入方式， 待签名数据需要先组装，不同链的构造格式有差别。参考SDK的"如何验签"章节。 
-    let timestamp = "1606900362"
-    let account = "mykeydoctest"
+    let timestamp = "1606904682"
+    let account = "0x3bB9E1783D5F60927eD6c3d0c32BfAD055A1b72f"
     let uuID = "e9467118-9321-4916-8153-4a5a9087e51e"
     let ref = "mykey"
     let mykeyUID = "E87E3CC788C44BB8544003AF6CEB62E8"
@@ -51,15 +49,15 @@ async function getUnsignedData() {
     return unsignedData
 }
 
+  
 // 验证签名
 async function verifySignature(unsignedData, signature, signingKey) {
 
     let unsignedDataHash = web3.utils.soliditySha3(unsignedData);
     console.log("unsignedDataHash ", unsignedDataHash)
 
-    //let prefixedHash = web3.eth.accounts.hashMessage(unsignedDataHash)
     let recoveredKey = await web3.eth.accounts.recover(unsignedDataHash, signature)
-    
+
     console.log("recoveredKey: ", recoveredKey)
     console.log("验证签名:", recoveredKey === signingKey)
 
@@ -80,13 +78,13 @@ async function main() {
     let unsignedData = await getUnsignedData()
     let signature = "0x53d86f27d725d3660f242cf0efc1f62aed8c805a39bf9783e2e7c1f65a81d94f775dbcb2e7268672dccbb68518bf5b9ba5f0ad5b2bf20ff4f8c9043f7c43d6651c"
 
-
     console.log("unsignedData", unsignedData)
+    console.log("signature", signature)
 
 
 
     console.log("==============================验证签名==============================")
-    await verifySignature(unsignedData, signature)
+    await verifySignature(unsignedData, signature, signingKeyObj.signingKey)
 
 
 }
