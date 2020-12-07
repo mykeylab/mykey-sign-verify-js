@@ -44,13 +44,7 @@ async function getUnsignedData() {
     // unsignedData = '...'
 
     // 2. SDK接入方式， 待签名数据需要先组装，不同链的构造格式有差别。参考SDK的"如何验签"章节。 
-    let timestamp = "1606900362"
-    let account = "mykeydoctest"
-    let uuID = "e9467118-9321-4916-8153-4a5a9087e51e"
-    let ref = "mykey"
-    let mykeyUID = "E87E3CC788C44BB8544003AF6CEB62E8"
-
-    let unsignedData = timestamp + account + uuID + ref + mykeyUID
+    let unsignedData = "1606900362mykeydocteste9467118-9321-4916-8153-4a5a9087e51emykeyE87E3CC788C44BB8544003AF6CEB62E8"
 
     return unsignedData
 }

@@ -37,15 +37,8 @@ async function getUnsignedData() {
     // unsignedData = '...'
 
     // 2. SDK接入方式， 待签名数据需要先组装，不同链的构造格式有差别。参考SDK的"如何验签"章节。 
-    let timestamp = "1606904682"
-    let account = "0x3bB9E1783D5F60927eD6c3d0c32BfAD055A1b72f"
-    let uuID = "e9467118-9321-4916-8153-4a5a9087e51e"
-    let ref = "mykey"
-    let mykeyUID = "E87E3CC788C44BB8544003AF6CEB62E8"
 
-    let str = timestamp + account + uuID + ref + mykeyUID
-
-    let unsignedData = '0x' + Buffer.from(str).toString('hex')
+    let unsignedData = '0x3136303639303436383230783362423945313738334435463630393237654436633364306333324266414430353541316237326665393436373131382d393332312d343931362d383135332d3461356139303837653531656d796b65794538374533434337383843343442423835343430303341463643454236324538'
     return unsignedData
 }
 
